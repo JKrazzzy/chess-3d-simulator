@@ -1,4 +1,5 @@
 import type { Move } from 'chess.js';
+import type { MoveGrade } from '../types';
 
 const COMMENTARY = {
   check: [
@@ -9,6 +10,7 @@ const COMMENTARY = {
   capture: ['Snack time! Piece down.', "Ouch, that's gonna leave a mark.", 'Clean capture!'],
   blunder: ["Oof, that's... not optimal.", 'Houston, we have a problem.', "I've seen better moves in checkers."],
   brilliant: ["Now THAT'S what I'm talking about!", "Chef's kiss! Magnifique!", 'Stockfish is taking notes!'],
+  mate: ['Game over! The king is toast.', 'Checkmate. Lights out!', 'That is a clean finish!'],
   opening: ['Solid opening choice!', "Let's see where this goes...", 'Classic move, I like it.'],
 };
 
@@ -36,6 +38,38 @@ export function generateCommentary(move: Move | undefined, evaluation: number, p
   }
 
   if (evalDrop < -1) {
+    return pickOne(COMMENTARY.brilliant);
+  }
+
+  return pickOne(COMMENTARY.opening);
+}
+
+export function generateCommentaryByGrade(
+  move: Move | undefined,
+  grade: MoveGrade | undefined,
+  isMate: boolean
+): string {
+  if (isMate) {
+    return pickOne(COMMENTARY.mate);
+  }
+
+  if (!move || !grade) {
+    return "Let's analyze this game!";
+  }
+
+  if (move.flags.includes('c')) {
+    return pickOne(COMMENTARY.capture);
+  }
+
+  if (move.san.includes('+')) {
+    return pickOne(COMMENTARY.check);
+  }
+
+  if (grade === 'blunder' || grade === 'mistake') {
+    return pickOne(COMMENTARY.blunder);
+  }
+
+  if (grade === 'best') {
     return pickOne(COMMENTARY.brilliant);
   }
 

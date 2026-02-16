@@ -15,7 +15,10 @@ export default function EvalBar() {
       <div className="absolute bottom-0 w-full bg-white transition-all duration-300" style={{ height: `${percentage}%` }} />
       <div className="absolute top-0 left-0 right-0 bg-black" style={{ height: `${100 - percentage}%` }} />
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold z-10">
-        {analysis.evaluation.toFixed(1)}
+        {analysis.mate ? `M${analysis.mate}` : analysis.evaluation.toFixed(1)}
+      </div>
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-300 z-10 whitespace-nowrap rotate-90 origin-center">
+        d{analysis.depth} · {analysis.bestMove}
       </div>
     </div>
   );

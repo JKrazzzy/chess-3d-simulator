@@ -1,12 +1,21 @@
 import { useState } from 'react';
+import type { User } from 'firebase/auth';
 import { useGameStore } from '../../stores/gameStore';
 import { extractPGN, fetchUserGames } from '../../utils/chessComAPI';
+import { saveGameRecord } from '../../utils/firebaseGames';
 
-export default function GameLoader() {
+interface GameLoaderProps {
+  user: User | null;
+  accuracy: number;
+  onSaved: () => void;
+}
+
+export default function GameLoader({ user, accuracy, onSaved }: GameLoaderProps) {
   const [username, setUsername] = useState('');
   const [pgnText, setPgnText] = useState('');
   const [error, setError] = useState('');
   const loadPGN = useGameStore((state) => state.loadPGN);
+  const currentPgn = useGameStore((state) => state.currentPgn);
 
   const handleLoadChessCom = async () => {
     if (!username.trim()) {
@@ -39,6 +48,30 @@ export default function GameLoader() {
     setError('');
   };
 
+  const handleSave = async () => {
+    if (!user) {
+      setError('Sign in to save games.');
+      return;
+    }
+
+    if (!currentPgn) {
+      setError('Load a game before saving.');
+      return;
+    }
+
+    try {
+      await saveGameRecord({
+        userId: user.uid,
+        pgn: currentPgn,
+        accuracy,
+      });
+      setError('');
+      onSaved();
+    } catch {
+      setError('Failed to save game. Check Firebase configuration and rules.');
+    }
+  };
+
   return (
     <div className="p-4 bg-gray-800 rounded space-y-4">
       <div>
@@ -63,6 +96,9 @@ export default function GameLoader() {
         />
         <button onClick={handleLoadPgn} className="px-4 py-2 bg-blue-600 rounded mt-2 hover:bg-blue-700">
           Load PGN
+        </button>
+        <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 rounded mt-2 ml-2 hover:bg-indigo-700">
+          Save to Firebase
         </button>
       </div>
 
